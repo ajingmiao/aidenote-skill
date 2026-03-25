@@ -20,19 +20,21 @@
 
 ## 配置说明
 
-1. 访问 [API Key 管理页面](https://www.aidenote.cn/apikey)
-2. 输入密钥名称（如：OpenClaw小龙虾）
-3. 点击"生成访问密钥"
-4. 复制生成的 API Key
-5. 按照小龙虾提示配置 API Key
+1. 访问 https://h5.aidenote.cn/ 并登录
+2. 进入"我的"页面
+3. 点击"API Key"
+4. 输入密钥名称（如：OpenClaw小龙虾）
+5. 点击"生成访问密钥"
+6. 复制生成的 API Key
+7. 按照小龙虾提示配置 API Key
 
 ## 使用示例
 
 - "帮我看看最近的录音笔记"
 - "找一下关于项目会议的笔记"
-- "在知识库里搜索产品需求"
+- "给我看看昨天那条录音的转写内容"
 
 ## 技术支持
 
 - 官网：https://www.aidenote.cn
-- API Key 管理：https://www.aidenote.cn/apikey
+- H5 应用：https://h5.aidenote.cn/

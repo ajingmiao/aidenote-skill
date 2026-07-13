@@ -4,7 +4,7 @@ description: "Install and operate the verified AideNote local connection suite f
 license: MIT
 metadata:
   hermes:
-    version: 1.2.3
+    version: 1.2.4
     author: AideNote Team
     tags: [AideNote, SlonAide, recordings, transcription, summaries, todos, meetings, knowledge-base, mobile-bridge]
     category: productivity

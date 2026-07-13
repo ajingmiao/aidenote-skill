@@ -1,40 +1,70 @@
-# AiDeNote 录音笔记技能
+# AideNote for Hermes
 
-智能录音笔记管理助手 - 通过 OpenClaw 小龙虾快速查找和管理你的 AiDeNote 录音笔记。
+AideNote 录音笔记与本机智能体连接技能。安装后，Hermes 可以查询用户真实的录音、转写、AI 摘要、会议待办和知识库，并可通过已验证的安装程序连接 AideNote 手机 App。
 
-## 功能特性
+## 安装
 
-- 📝 查询和搜索录音笔记
-- 🎯 获取完整转写文本和 AI 总结
-- 🗂️ 知识库语义检索
-- 📁 文件夹分类管理
+在电脑终端执行：
 
-## 安装方法
-
-复制以下内容发送给你的 OpenClaw 小龙虾：
-
-```
-请安装 AiDeNote 录音笔记技能，帮我管理和查找录音笔记。
-技能地址：https://clawhub.ai/ajingmiao/aidenote-skill
+```bash
+hermes skills install ajingmiao/aidenote-skill
 ```
 
-## 配置说明
+也可以直接告诉 Hermes：
 
-1. 访问 https://h5.aidenote.cn/ 并登录
-2. 进入"我的"页面
-3. 点击"API Key"
-4. 输入密钥名称（如：OpenClaw小龙虾）
-5. 点击"生成访问密钥"
-6. 复制生成的 API Key
-7. 按照小龙虾提示配置 API Key
+```text
+请从 GitHub 安装 ajingmiao/aidenote-skill，并帮我连接 AideNote 手机 App。
+```
+
+## 首次连接
+
+安装技能后，对 Hermes 说：
+
+```text
+帮我安装并连接 AideNote。
+```
+
+Hermes 会调用技能内的安全安装流程。如果本机尚未授权，会显示一个 8 位配对码：
+
+1. 打开 AideNote App。
+2. 添加或编辑 Hermes 助手。
+3. 输入电脑上显示的配对码。
+4. 点击“确认连接”。
+
+确认后，电脑会自动安装并启动 AideNote tunnel、MCP server 和 Hermes bridge。用户不需要在对话中发送 API Key。
 
 ## 使用示例
 
-- "帮我看看最近的录音笔记"
-- "找一下关于项目会议的笔记"
-- "给我看看昨天那条录音的转写内容"
+- “查看最近的录音笔记”
+- “总结昨天的产品会议”
+- “今天有哪些待办？”
+- “搜索提到 RainCentral 的会议”
+- “查看我的知识库”
+- “检查 AideNote 手机连接状态”
 
-## 技术支持
+技能要求 Hermes 在回答录音、会议、摘要和待办问题前先调用 AideNote 脚本，禁止根据聊天记忆猜测数据或在调用失败时声称没有记录。
 
-- 官网：https://www.aidenote.cn
-- H5 应用：https://h5.aidenote.cn/
+## 支持平台
+
+- macOS Intel / Apple Silicon
+- Windows x64 / ARM64
+
+本机连接套件版本：`3.2.0`。
+
+## 安全设计
+
+- 安装脚本和二进制文件使用固定版本地址。
+- 下载内容在执行前进行 SHA-256 校验。
+- 只向安装进程传递必要环境变量。
+- 配对凭据绑定当前 AideNote 账号和设备。
+- 不在聊天内容中展示 API Key、访问令牌或配置文件。
+
+## 项目文件
+
+- `SKILL.md`：Hermes 行为和工具选择规则。
+- `scripts/aidenote.py`：录音、摘要、待办和知识库查询。
+- `scripts/bridge.py`：配对、安装和连接状态检查。
+- `scripts/configure.py`：无法使用 App 配对时的本机恢复工具。
+- `references/api-contract.md`：接口与返回值维护说明。
+
+官网：[https://www.aidenote.cn](https://www.aidenote.cn)

@@ -1,271 +1,149 @@
 ---
-name: AiDeNote 录音笔记
-description: 智能录音笔记管理助手 - AI 自动转写和总结录音，支持知识库管理和语义搜索
-version: 1.0.0
-author: AiDeNote Team
-capabilities:
-  - 查询和搜索录音笔记
-  - 获取转写文本和 AI 总结
-  - 知识库管理和语义检索
-  - 文件夹分类和标签管理
+name: aidenote-hermes
+description: "Install and operate the verified AideNote local connection suite for Hermes, then query real AideNote recording notes, transcripts, summaries, extracted todos/action items, knowledge bases, account status, and mobile bridge health. Use whenever the user mentions AideNote, SlonAide, recording notes, meeting minutes, transcripts, summaries, today's tasks, todos, follow-ups, action items, knowledge bases, installing the AideNote connection, or connecting the AideNote mobile app to this computer."
+license: MIT
+metadata:
+  hermes:
+    version: 1.2.3
+    author: AideNote Team
+    tags: [AideNote, SlonAide, recordings, transcription, summaries, todos, meetings, knowledge-base, mobile-bridge]
+    category: productivity
 ---
 
-# AiDeNote 录音笔记 API
+# AideNote for Hermes
 
-## ⚠️ 必读约束
+Use the bundled scripts to retrieve real AideNote data. Do not infer account data from conversation history.
 
-### 🌐 Base URL（重要！所有 API 共用）
-```
-https://api.aidenote.cn
-```
-所有 API 请求必须使用此 Base URL。
+## Mandatory behavior
 
-### 🔑 首次安装配置
-⚠️ Agent 必读：每次调用 API 前，先检查 `$AIDENOTE_API_KEY` 是否存在。若不存在，引导用户获取 API Key。
+1. Run an AideNote command before answering any question about recordings, meetings, transcripts, summaries, todos, action items, or knowledge bases.
+2. Never answer that the user has no todos or recordings unless the corresponding command completed successfully and returned an empty result.
+3. Never invent IDs, titles, dates, transcript text, summaries, or task status.
+4. Never ask the user to paste an API key into chat. If setup is missing during an authorized install, start the built-in pairing flow and show only its 8-character code.
+5. Do not print environment variables, authorization headers, access tokens, or AideNote configuration files.
+6. Summarize command JSON for the user instead of dumping raw payloads, unless raw JSON is explicitly requested.
+7. Run `bridge.py install --confirm` only after the user explicitly asks to install, configure, repair, or connect AideNote on this computer. A data question alone is not installation consent.
 
-**配置步骤：**
-1. 访问 https://h5.aidenote.cn/ 并登录
-2. 进入"我的"页面
-3. 点击"API Key"
-4. 输入密钥名称（如：OpenClaw小龙虾）
-5. 点击"生成访问密钥"
-6. 复制生成的 API Key（格式：sk-xxxxxxxx...）
-7. 在 `~/.openclaw/openclaw.json` 中添加：
-```json
-{
-  "skills": {
-    "entries": {
-      "aidenote": {
-        "apiKey": "sk_你的key",
-        "env": {
-          "AIDENOTE_BASE_URL": "https://api.aidenote.cn"
-        }
-      }
-    }
-  }
-}
-```
+The API command is:
 
-### 🔒 安全规则
-- 笔记数据属于用户隐私，不在群聊中主动展示笔记内容
-- API Key 长期有效，除非用户手动删除或禁用
-- 请求失败时检查 API Key 是否有效
-
-## 认证
-请求头：
-```
-Authorization: Bearer {token}
-```
-
-**获取 Token：**
 ```bash
-POST /api/UserapikeyMstr/GetToken
-Content-Type: application/json
-
-{
-  "apiKey": "sk-xxx..."
-}
+python3 ${HERMES_SKILL_DIR}/scripts/aidenote.py COMMAND [OPTIONS]
 ```
 
-返回：
-```json
-{
-  "code": 200,
-  "result": {
-    "token": "jwt-token",
-    "userId": "user-id"
-  }
-}
+If `python3` is unavailable on Windows, use `python` with the same arguments.
+
+## One-time pairing
+
+When the user explicitly asks to install or connect AideNote, run:
+
+```bash
+python3 ${HERMES_SKILL_DIR}/scripts/bridge.py install --confirm
 ```
 
-后续所有请求使用返回的 `token` 作为 Bearer Token。
+If credentials are missing, the command immediately returns `pairing_required` and an 8-character `pairingCode`. Tell the user to open AideNote, add or edit the Hermes assistant, enter that code, and tap **Confirm connection**. A detached local worker then receives the account-bound credential, installs the verified connection suite, and removes the relay pairing session. The user does not need to paste an API Key or run another command.
 
-## 快速决策
+Use `bridge.py status` to check progress. Its `pairing.status` changes from `pending` to `installing`, then `installed` or `failed`. Never print or inspect the private pairing state file.
 
-| 用户意图 | 接口 | 关键点 |
-|---------|------|--------|
-| 「查我的笔记」「最近的录音」 | POST /api/AudiofileMstr/AudiofileseleUserAllList | 查询用户所有录音，支持分页和筛选 |
-| 「看这条笔记详情」「转写内容」 | POST /api/AudiofileMstr/AudiofileToText | 获取录音转文字信息和 AI 总结 |
-| 「查文件夹」「笔记分类」 | POST /api/UserfolderMstr/List | 树形结构文件夹列表 |
+`scripts/configure.py` remains a manual recovery option only when App pairing is unavailable. It must be run directly in a local terminal; never ask the user to send the key in chat.
 
-## 核心能力
+## Choose the command
 
-### 📝 录音笔记管理
-AiDeNote 是一个智能录音笔记系统，通过 AI 自动转写录音并生成总结。本技能让你通过自然语言快速查找和管理录音笔记。
+| User intent | Command |
+|---|---|
+| Check connection or account | `health` or `user-info` |
+| List/search recent recordings | `recordings` |
+| Read transcript or AI summary | `recording-detail` |
+| Ask about todos, tasks, action items, or follow-ups | `todos` |
+| List knowledge bases | `knowledge-bases` |
+| List files in a knowledge base | `knowledge-files` |
+| Check mobile bridge state | `bridge.py status` |
+| Install/configure the local connection suite | `bridge.py install --confirm` |
+| Check whether the local connection suite is installed | `bridge.py status` |
 
-**核心功能：**
-- **查询笔记列表**：按时间、文件夹筛选
-- **获取笔记详情**：完整转写文本和 AI 总结
-- **全文搜索**：在所有笔记中搜索关键词
-- **文件夹管理**：按文件夹组织笔记
-- **知识库检索**：语义搜索知识库内容
+## Common workflows
 
-## API 接口文档
+### Recent recordings
 
-### 笔记列表
-```
-POST /api/AudiofileMstr/AudiofileseleUserAllList
-Content-Type: application/json
-Authorization: Bearer {token}
+```bash
+python3 ${HERMES_SKILL_DIR}/scripts/aidenote.py recordings --page 1 --page-size 10
 ```
 
-请求体：
-```json
-{
-  "pageIndex": 1,
-  "pageSize": 20,
-  "selectValue": "",
-  "orderField": "createTime",
-  "order": "descending"
-}
+Add `--keyword "text"` when the user gives a search term. Present titles, dates, durations, and processing status. Preserve the returned recording ID for follow-up detail requests.
+
+### Transcript or summary
+
+If the user did not provide a recording ID, list recent recordings first and select the matching record. Then run:
+
+```bash
+python3 ${HERMES_SKILL_DIR}/scripts/aidenote.py recording-detail --file-id "RECORDING_ID"
 ```
 
-参数说明：
-- `pageIndex`: 页码，从 1 开始
-- `pageSize`: 每页数量，默认 20
-- `selectValue`: 搜索关键词
-- `orderField`: 排序字段，默认 createTime
-- `order`: 排序方式，descending/ascending
+Answer only from the returned detail. Distinguish transcript content from the AI summary and extracted action items.
 
-### 笔记详情（转写内容）
-```
-POST /api/AudiofileMstr/AudiofileToText
-Content-Type: application/json
-Authorization: Bearer {token}
+### Todos and action items
+
+For requests such as "今天有哪些待办", "最近有什么任务", or "会议里有哪些行动项", run:
+
+```bash
+python3 ${HERMES_SKILL_DIR}/scripts/aidenote.py todos --recording-page-size 20 --page-size 50
 ```
 
-请求体：
-```json
-{
-  "audiotextFileid": "文件ID"
-}
+Completed items are excluded by default. Add `--include-done` only when the user asks for completed/history items. Group results by source recording when that improves readability.
+
+### Knowledge bases
+
+```bash
+python3 ${HERMES_SKILL_DIR}/scripts/aidenote.py knowledge-bases
 ```
 
-返回录音的转文字信息和 AI 总结。
+Use the returned knowledge-base ID for:
 
-### 文件夹列表
-```
-POST /api/UserfolderMstr/List
-Content-Type: application/json
-Authorization: Bearer {token}
+```bash
+python3 ${HERMES_SKILL_DIR}/scripts/aidenote.py knowledge-files --knowledge-base-id ID
 ```
 
-返回树形结构的文件夹列表。
+Add `--folder-id ID` or `--keyword "text"` only when needed.
 
-### 知识库搜索
-```
-POST /api/KnowledgeBase/Search
-Content-Type: application/json
-Authorization: Bearer {token}
-```
+## Mobile bridge
 
-请求体：
-```json
-{
-  "query": "搜索内容",
-  "topK": 5
-}
+The local connection suite enables the AideNote mobile app to reach this computer's Hermes API through the AideNote relay. It installs the AideNote tunnel, the AideNote MCP server, the WorkBuddy bridge, login/startup services, and Hermes API settings. Existing Hermes and OpenClaw tokens are preserved.
+
+Check status without changing the system:
+
+```bash
+python3 ${HERMES_SKILL_DIR}/scripts/bridge.py status
 ```
 
-支持语义检索，返回最相关的知识库内容。
+When the user explicitly says "安装 AideNote 连接", "配置手机连接", "修复 AideNote bridge", or equivalent, run:
 
-## 使用示例
-
-### 查询最近的笔记
-```
-你：帮我看看最近的录音笔记
-小龙虾：好的，我帮你查询最近的笔记...
-
-找到 5 条最近的录音：
-1. 【项目会议】- 今天 14:30，时长 45 分钟
-2. 【客户访谈】- 昨天 10:00，时长 1 小时
-...
+```bash
+python3 ${HERMES_SKILL_DIR}/scripts/bridge.py install --confirm
 ```
 
-### 搜索特定内容
-```
-你：找一下关于"产品需求"的笔记
-小龙虾：在你的笔记中搜索"产品需求"...
+The command downloads the official installer over HTTPS, verifies its pinned SHA-256 digest, and passes only the required local credential and a restricted environment. The official installer verifies every downloaded binary, configures Hermes API port `8642`, synchronizes the Hermes API token into the tunnel config, and enables login/startup services. Do not substitute another download URL, bypass checksum verification, or construct a shell pipeline.
 
-找到 3 条相关笔记：
-1. 【产品需求讨论】- 2026-03-20
-   摘要：讨论了新版本的核心功能需求...
-```
+After installation, inspect the returned `status`. Success requires all of the following:
 
-### 获取笔记详情
-```
-你：给我看看昨天那条会议录音的详细内容
-小龙虾：这是笔记的完整内容：
+- `installed` is `true`.
+- `hermesTokenConfigured` is `true`.
+- `hermesStartupConfigured` is `true`.
+- `ports.hermes.reachable` is `true`.
 
-📝 标题：项目会议
-⏱️ 时长：45 分钟
-📅 时间：2026-03-24 14:30
+If the install command returns `pairing_required`, present the pairing code and App steps. If installation is not explicitly authorized, show the status and ask whether the user wants the verified connection suite installed.
 
-💡 AI 总结：
-本次会议主要讨论了...
+## Error handling
 
-📄 完整转写：
-[00:00] 张三：大家好...
-```
+- `pairing_required`: show the 8-character code and direct the user to AideNote > Add Assistant > Hermes.
+- `pairing_network_error`: report that the pairing service could not be reached and keep the existing installation unchanged.
+- `pairing_not_found`: the code expired; rerun the authorized install command to create a new code.
+- `missing_credentials`: start the pairing flow through `bridge.py install --confirm`; use `configure.py` only as manual recovery.
+- `insecure_credentials`: tell the user to restrict the credential file to owner-only access and rerun configuration.
+- `authentication_failed`: ask the user to regenerate or reconfigure the AideNote API Key locally.
+- `network_error`: report that AideNote could not be reached; do not claim the account has no data.
+- `api_error`: report the safe error message and operation; never expose credentials.
+- `confirmation_required`: ask the user for explicit installation consent; do not add `--confirm` preemptively.
+- `checksum_mismatch`: stop and report that installer verification failed; never bypass the check.
+- `installer_failed` or `verification_failed`: report the safe error, run `bridge.py status`, and point the user to the official guide if manual recovery is needed.
+- Unsupported platform: automatic bridge installation currently supports macOS and Windows.
 
-### 按文件夹查询
-```
-你：工作文件夹里有哪些笔记？
-小龙虾：工作文件夹中有以下笔记...
-```
-
-### 知识库检索
-```
-你：在我的知识库里搜索"API 设计"
-小龙虾：在知识库中找到以下相关内容...
-```
-
-## 常见问题
-
-### Q: API Key 在哪里获取？
-A: 访问 https://h5.aidenote.cn/ 登录后，进入"我的" → "API Key"页面创建。
-
-### Q: API Key 会过期吗？
-A: API Key 长期有效，除非你手动删除或禁用。
-
-### Q: 可以创建多个 API Key 吗？
-A: 可以，你可以为不同的应用创建多个 API Key，每个最多 20 个字符的名称。
-
-### Q: 如何撤销 API Key？
-A: 在 API Key 管理页面点击删除按钮即可立即撤销。
-
-### Q: 技能无法访问我的笔记怎么办？
-A: 请检查：
-1. API Key 是否正确配置
-2. API Key 是否已被禁用或删除
-3. Token 是否已过期（需重新调用 GetToken）
-4. 网络连接是否正常
-
-### Q: 支持哪些类型的录音？
-A: 支持即时录音、会议录音、本地音频、内录音频、课堂录音等多种类型。
-
-## 隐私说明
-
-- 本技能仅访问你授权的 AiDeNote 账号数据
-- 所有数据传输使用 HTTPS 加密
-- API Key 仅用于身份认证，不会被存储或分享
-- 你可以随时撤销 API Key 以停止访问
-- 笔记内容不会被第三方访问或存储
-
-## 技术支持
-
-- **官网**：https://www.aidenote.cn
-- **H5 应用**：https://h5.aidenote.cn/
-- **API Key 管理**：登录 H5 应用后进入"我的" → "API Key"
-- **问题反馈**：在 AiDeNote 应用内"意见反馈"提交
-- **技能地址**：https://clawhub.ai/ajingmiao/aidenote-skill
-
-## 更新日志
-
-### v1.0.0 (2026-03-25)
-- 🎉 首次发布
-- ✅ 支持笔记查询和搜索
-- ✅ 支持知识库语义检索
-- ✅ 支持文件夹管理
-- ✅ 完整的 API 文档
-
+For endpoint and output details needed during maintenance, read [references/api-contract.md](references/api-contract.md).

@@ -4,18 +4,19 @@ AideNote 录音笔记与本机智能体连接技能。安装后，Hermes 可以�
 
 ## 安装
 
-在电脑终端执行：
+推荐通过 ClawHub 安装，Hermes 会下载完整技能目录并执行安全扫描：
 
 ```bash
-hermes skills tap add ajingmiao/aidenote-skill
-hermes skills install ajingmiao/aidenote-skill/skills/aidenote-hermes
+hermes skills install clawhub/aidenote-hermes
 ```
 
 也可以直接告诉 Hermes：
 
 ```text
-请添加 GitHub Skill 源 ajingmiao/aidenote-skill，安装其中的 aidenote-hermes，并帮我连接 AideNote 手机 App。
+请安装 ClawHub 上的 aidenote-hermes 技能，并帮我连接 AideNote 手机 App。
 ```
+
+本仓库同步保存最新开源源码，`skills/aidenote-hermes/` 是完整的 Hermes Skill 目录。
 
 ## 首次连接
 

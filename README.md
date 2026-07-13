@@ -7,13 +7,14 @@ AideNote 录音笔记与本机智能体连接技能。安装后，Hermes 可以�
 在电脑终端执行：
 
 ```bash
-hermes skills install ajingmiao/aidenote-skill
+hermes skills tap add ajingmiao/aidenote-skill
+hermes skills install ajingmiao/aidenote-skill/skills/aidenote-hermes
 ```
 
 也可以直接告诉 Hermes：
 
 ```text
-请从 GitHub 安装 ajingmiao/aidenote-skill，并帮我连接 AideNote 手机 App。
+请添加 GitHub Skill 源 ajingmiao/aidenote-skill，安装其中的 aidenote-hermes，并帮我连接 AideNote 手机 App。
 ```
 
 ## 首次连接

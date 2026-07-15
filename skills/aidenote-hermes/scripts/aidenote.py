@@ -196,25 +196,40 @@ class Client:
         return token
 
     def post(self, path: str, body: dict[str, Any] | None, *, operation: str) -> Any:
-        token = self.exchange_token()
         payload = None if body is None else json.dumps(body).encode("utf-8")
-        req = request.Request(
-            self.api_base + path,
-            data=payload,
-            method="POST",
-            headers={
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {token}",
-            },
+        for attempt in range(2):
+            token = self.exchange_token()
+            req = request.Request(
+                self.api_base + path,
+                data=payload,
+                method="POST",
+                headers={
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {token}",
+                },
+            )
+            try:
+                decoded = self._open(req, operation=operation)
+            except AideNoteError as exc:
+                if attempt == 0 and exc.code == "authentication_failed":
+                    self.token = ""
+                    continue
+                raise
+            if isinstance(decoded, dict) and "code" in decoded:
+                code = str(decoded.get("code"))
+                if attempt == 0 and code in {"401", "403"}:
+                    self.token = ""
+                    continue
+                if code != "200":
+                    message = safe_api_message(decoded.get("message"))
+                    raise AideNoteError("api_error", message, operation=operation)
+            return decoded
+        raise AideNoteError(
+            "authentication_failed",
+            "AideNote authentication retry failed",
+            operation=operation,
         )
-        decoded = self._open(req, operation=operation)
-        if isinstance(decoded, dict) and "code" in decoded:
-            code = decoded.get("code")
-            if str(code) != "200":
-                message = safe_api_message(decoded.get("message"))
-                raise AideNoteError("api_error", message, operation=operation)
-        return decoded
 
     def _open(self, req: request.Request, *, operation: str, authentication: bool = False) -> Any:
         try:

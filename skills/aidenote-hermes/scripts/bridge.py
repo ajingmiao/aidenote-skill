@@ -23,16 +23,16 @@ from urllib import error, request
 GUIDE_URL = "https://www.aidenote.cn/mobile/workbuddy-skill-guide.html"
 PAIRING_BASE = "https://api.aidenote.cn/agent-pair"
 PAIRING_STATE_NAME = "aidenote-pairing.json"
-EXPECTED_TUNNEL_VERSION = "3.2.4"
+EXPECTED_TUNNEL_VERSION = "3.2.5"
 INSTALLERS = {
     "Darwin": {
         "url": f"https://cdn.aidenote.cn/tunnel/releases/{EXPECTED_TUNNEL_VERSION}/install-macos.sh",
-        "sha256": "d09ef9cdd1f48eee2709daa926ab8e1f58d7995d207919b38e47deb976afc425",
+        "sha256": "aefed46e908780e52b8f505a7f89fe48d890d59031a359b636c8d06d499b25b3",
         "suffix": ".sh",
     },
     "Windows": {
         "url": f"https://cdn.aidenote.cn/tunnel/releases/{EXPECTED_TUNNEL_VERSION}/install-windows.ps1",
-        "sha256": "d71fa6cacd9a59079ac1711e39141678fece8fcb06b03695b04664143aec8914",
+        "sha256": "fa8ae2f3851b8b96b3c0fb1825710520b0cb9365d1c4e814e01c37885b4897f0",
         "suffix": ".ps1",
     },
 }

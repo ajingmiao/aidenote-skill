@@ -23,15 +23,16 @@ from urllib import error, request
 GUIDE_URL = "https://www.aidenote.cn/mobile/workbuddy-skill-guide.html"
 PAIRING_BASE = "https://api.aidenote.cn/agent-pair"
 PAIRING_STATE_NAME = "aidenote-pairing.json"
+EXPECTED_TUNNEL_VERSION = "3.2.3"
 INSTALLERS = {
     "Darwin": {
-        "url": "https://cdn.aidenote.cn/tunnel/releases/3.2.2/install-macos.sh",
-        "sha256": "8e673bf62dbf426f7f0313c0f4cbd97a988002064b77ed1dd98481fb0ddfdeb5",
+        "url": f"https://cdn.aidenote.cn/tunnel/releases/{EXPECTED_TUNNEL_VERSION}/install-macos.sh",
+        "sha256": "de87a4aa7d5a1ba1862077122bcbd1ecbb956d647e7691454566924e62d06a5e",
         "suffix": ".sh",
     },
     "Windows": {
-        "url": "https://cdn.aidenote.cn/tunnel/releases/3.2.2/install-windows.ps1",
-        "sha256": "97c50cee760edf74bae0a1427cf1f8bf115cd505dca7839cbe91bc2f0491c8df",
+        "url": f"https://cdn.aidenote.cn/tunnel/releases/{EXPECTED_TUNNEL_VERSION}/install-windows.ps1",
+        "sha256": "00f9300ad4e621c7c7d795b0fd422935d1e7ea3436798fe722213be18fcb6cd2",
         "suffix": ".ps1",
     },
 }
@@ -193,15 +194,21 @@ def bridge_status() -> dict[str, Any]:
         tunnel_service = Path()
         workbuddy_service = Path()
         hermes_service = Path()
+    release_info = read_bridge_config(install_dir / "release.json")
+    installed_version = str(release_info.get("version") or "").strip()
+    up_to_date = installed_version == EXPECTED_TUNNEL_VERSION
     files_installed = config_file.is_file() and tunnel_binary.is_file() and tunnel_service.is_file()
     hermes_token_configured = bool(str(config.get("hermesToken") or "").strip())
     hermes_reachable = port_open(8642)
     result = {
-        "ok": files_installed and hermes_token_configured and hermes_reachable,
+        "ok": files_installed and up_to_date and hermes_token_configured and hermes_reachable,
         "operation": "bridge-status",
         "platform": system,
         "supportedInstaller": system in INSTALLERS,
         "installed": files_installed,
+        "installedVersion": installed_version,
+        "expectedVersion": EXPECTED_TUNNEL_VERSION,
+        "upToDate": up_to_date,
         "configPresent": config_file.is_file(),
         "installDirectoryPresent": install_dir.is_dir(),
         "tunnelBinaryPresent": tunnel_binary.is_file(),
@@ -451,7 +458,7 @@ def install_bridge() -> dict[str, Any]:
         )
     installer_environment = {
         "AIDE_NOTE_API_KEY": api_key,
-        "AIDE_NOTE_TUNNEL_BASE_URL": "https://cdn.aidenote.cn/tunnel/releases/3.2.2",
+        "AIDE_NOTE_TUNNEL_BASE_URL": f"https://cdn.aidenote.cn/tunnel/releases/{EXPECTED_TUNNEL_VERSION}",
         "AIDE_NOTE_RESET_DEVICE_ID": "1",
         "HOME": str(Path.home()),
         "PATH": path_value,

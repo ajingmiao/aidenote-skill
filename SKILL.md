@@ -4,7 +4,7 @@ description: "Install and operate the verified AideNote local connection suite f
 license: MIT
 metadata:
   hermes:
-    version: 1.2.5
+    version: 1.2.7
     author: AideNote Team
     tags: [AideNote, SlonAide, recordings, transcription, summaries, todos, meetings, knowledge-base, mobile-bridge]
     category: productivity
@@ -125,6 +125,7 @@ The command downloads the official installer over HTTPS, verifies its pinned SHA
 After installation, inspect the returned `status`. Success requires all of the following:
 
 - `installed` is `true`.
+- `upToDate` is `true`.
 - `hermesTokenConfigured` is `true`.
 - `hermesStartupConfigured` is `true`.
 - `ports.hermes.reachable` is `true`.
@@ -159,6 +160,7 @@ If the install command returns `pairing_required`, present the pairing code and 
 - `confirmation_required`: ask the user for explicit installation consent; do not add `--confirm` preemptively.
 - `checksum_mismatch`: stop and report that installer verification failed; never bypass the check.
 - `installer_failed` or `verification_failed`: report the safe error, run `bridge.py status`, and point the user to the official guide if manual recovery is needed.
+- `upToDate` is `false`: run the authorized install again to upgrade the local connection suite before diagnosing relay or token failures.
 - Hermes port `8642` unavailable: run `hermes gateway status`, start or reinstall the supervised Gateway after authorization, then rerun `bridge.py status`.
 - `No inference provider configured`: tell the user to run `hermes model` locally; do not treat this as a tunnel or account failure.
 - Unsupported platform: automatic bridge installation currently supports macOS and Windows.

@@ -23,16 +23,16 @@ from urllib import error, request
 GUIDE_URL = "https://www.aidenote.cn/mobile/workbuddy-skill-guide.html"
 PAIRING_BASE = "https://api.aidenote.cn/agent-pair"
 PAIRING_STATE_NAME = "aidenote-pairing.json"
-EXPECTED_TUNNEL_VERSION = "3.2.3"
+EXPECTED_TUNNEL_VERSION = "3.2.4"
 INSTALLERS = {
     "Darwin": {
         "url": f"https://cdn.aidenote.cn/tunnel/releases/{EXPECTED_TUNNEL_VERSION}/install-macos.sh",
-        "sha256": "de87a4aa7d5a1ba1862077122bcbd1ecbb956d647e7691454566924e62d06a5e",
+        "sha256": "d09ef9cdd1f48eee2709daa926ab8e1f58d7995d207919b38e47deb976afc425",
         "suffix": ".sh",
     },
     "Windows": {
         "url": f"https://cdn.aidenote.cn/tunnel/releases/{EXPECTED_TUNNEL_VERSION}/install-windows.ps1",
-        "sha256": "00f9300ad4e621c7c7d795b0fd422935d1e7ea3436798fe722213be18fcb6cd2",
+        "sha256": "d71fa6cacd9a59079ac1711e39141678fece8fcb06b03695b04664143aec8914",
         "suffix": ".ps1",
     },
 }
@@ -459,6 +459,7 @@ def install_bridge() -> dict[str, Any]:
     installer_environment = {
         "AIDE_NOTE_API_KEY": api_key,
         "AIDE_NOTE_TUNNEL_BASE_URL": f"https://cdn.aidenote.cn/tunnel/releases/{EXPECTED_TUNNEL_VERSION}",
+        "AIDE_NOTE_REPLACE_API_KEY": "1",
         "AIDE_NOTE_RESET_DEVICE_ID": "1",
         "HOME": str(Path.home()),
         "PATH": path_value,

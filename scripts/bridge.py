@@ -25,12 +25,12 @@ PAIRING_BASE = "https://api.aidenote.cn/agent-pair"
 PAIRING_STATE_NAME = "aidenote-pairing.json"
 INSTALLERS = {
     "Darwin": {
-        "url": "https://cdn.aidenote.cn/tunnel/releases/3.2.0/install-macos.sh",
-        "sha256": "c5f019f6ba563d23aaca8f8818e2e7f4e8262ddd71b5570ea7a1d2fc5ab0adea",
+        "url": "https://cdn.aidenote.cn/tunnel/releases/3.2.2/install-macos.sh",
+        "sha256": "8e673bf62dbf426f7f0313c0f4cbd97a988002064b77ed1dd98481fb0ddfdeb5",
         "suffix": ".sh",
     },
     "Windows": {
-        "url": "https://cdn.aidenote.cn/tunnel/releases/3.2.0/install-windows.ps1",
+        "url": "https://cdn.aidenote.cn/tunnel/releases/3.2.2/install-windows.ps1",
         "sha256": "97c50cee760edf74bae0a1427cf1f8bf115cd505dca7839cbe91bc2f0491c8df",
         "suffix": ".ps1",
     },
@@ -451,7 +451,7 @@ def install_bridge() -> dict[str, Any]:
         )
     installer_environment = {
         "AIDE_NOTE_API_KEY": api_key,
-        "AIDE_NOTE_TUNNEL_BASE_URL": "https://cdn.aidenote.cn/tunnel/releases/3.2.0",
+        "AIDE_NOTE_TUNNEL_BASE_URL": "https://cdn.aidenote.cn/tunnel/releases/3.2.2",
         "AIDE_NOTE_RESET_DEVICE_ID": "1",
         "HOME": str(Path.home()),
         "PATH": path_value,

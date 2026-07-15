@@ -51,7 +51,7 @@ Hermes 会调用技能内的安全安装流程。如果本机尚未授权，会�
 - macOS Intel / Apple Silicon
 - Windows x64 / ARM64
 
-本机连接套件版本：`3.2.0`。
+Hermes Skill 版本：`1.2.5`。本机连接套件版本：`3.2.2`。
 
 ## 安全设计
 

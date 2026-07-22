@@ -4,7 +4,7 @@ description: "Install and operate the verified AideNote local connection suite f
 license: MIT
 metadata:
   hermes:
-    version: 1.2.8
+    version: 1.2.9
     author: AideNote Team
     tags: [AideNote, SlonAide, recordings, transcription, summaries, todos, meetings, knowledge-base, mobile-bridge]
     category: productivity
@@ -52,10 +52,12 @@ Use `bridge.py status` to check progress. Its `pairing.status` changes from `pen
 |---|---|
 | Check connection or account | `health` or `user-info` |
 | List/search recent recordings | `recordings` |
+| List recordings shared with me | `shared-recordings` |
 | Read transcript or AI summary | `recording-detail` |
 | Ask about todos, tasks, action items, or follow-ups | `todos` |
 | List knowledge bases | `knowledge-bases` |
 | List files in a knowledge base | `knowledge-files` |
+| List recordings in a knowledge base | `knowledge-recordings` |
 | Check mobile bridge state | `bridge.py status` |
 | Install/configure the local connection suite | `bridge.py install --confirm` |
 | Check whether the local connection suite is installed | `bridge.py status` |
@@ -80,6 +82,16 @@ python3 ${HERMES_SKILL_DIR}/scripts/aidenote.py recording-detail --file-id "RECO
 
 Answer only from the returned detail. Distinguish transcript content from the AI summary and extracted action items.
 
+### Recordings shared with me
+
+For requests such as "分享给我的录音" or "别人共享了哪些音频", run:
+
+```bash
+python3 ${HERMES_SKILL_DIR}/scripts/aidenote.py shared-recordings --page 1 --page-size 10
+```
+
+Do not use the personal `recordings` command for shared-with-me requests.
+
 ### Todos and action items
 
 For requests such as "今天有哪些待办", "最近有什么任务", or "会议里有哪些行动项", run:
@@ -103,6 +115,14 @@ python3 ${HERMES_SKILL_DIR}/scripts/aidenote.py knowledge-files --knowledge-base
 ```
 
 Add `--folder-id ID` or `--keyword "text"` only when needed.
+
+For recordings stored anywhere inside a knowledge base, including nested folders, run:
+
+```bash
+python3 ${HERMES_SKILL_DIR}/scripts/aidenote.py knowledge-recordings --knowledge-base-id ID
+```
+
+Use this command instead of manually filtering `knowledge-files` output.
 
 ## Mobile bridge
 

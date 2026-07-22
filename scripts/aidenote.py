@@ -255,19 +255,26 @@ class Client:
             ) from exc
 
 
-def recordings(client: Client, args: argparse.Namespace) -> dict[str, Any]:
+def list_recordings(
+    client: Client,
+    args: argparse.Namespace,
+    *,
+    shared_with_me: bool = False,
+) -> dict[str, Any]:
     body: dict[str, Any] = {
         "page": clamp(args.page, 1, 1_000_000),
         "pageSize": clamp(args.page_size, 1, 50),
         "orderField": "createTime",
         "order": "descending",
     }
+    if shared_with_me:
+        body["screeningType"] = "2"
     if args.keyword:
         body["selectValue"] = args.keyword
     response = client.post(
         "/api/audiofileMstr/audiofileseleUserAllList",
         body,
-        operation="list recordings",
+        operation="list shared recordings" if shared_with_me else "list recordings",
     )
     result = result_value(response)
     items = result_items(result)
@@ -289,12 +296,20 @@ def recordings(client: Client, args: argparse.Namespace) -> dict[str, Any]:
     total = result.get("total") if isinstance(result, dict) else len(normalized)
     return {
         "ok": True,
-        "operation": "recordings",
+        "operation": "shared-recordings" if shared_with_me else "recordings",
         "total": total,
         "page": body["page"],
         "pageSize": body["pageSize"],
         "items": normalized,
     }
+
+
+def recordings(client: Client, args: argparse.Namespace) -> dict[str, Any]:
+    return list_recordings(client, args)
+
+
+def shared_recordings(client: Client, args: argparse.Namespace) -> dict[str, Any]:
+    return list_recordings(client, args, shared_with_me=True)
 
 
 def recording_detail(client: Client, args: argparse.Namespace) -> dict[str, Any]:
@@ -453,6 +468,80 @@ def knowledge_files(client: Client, args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def knowledge_recordings(client: Client, args: argparse.Namespace) -> dict[str, Any]:
+    queue = [0]
+    visited: set[int] = set()
+    recordings_found: list[dict[str, Any]] = []
+
+    while queue:
+        folder_id = queue.pop(0)
+        if folder_id in visited:
+            continue
+        visited.add(folder_id)
+        body: dict[str, Any] = {
+            "id": args.knowledge_base_id,
+            "name": "",
+            "type": "kb" if folder_id == 0 else "folder",
+            "fileld": "",
+            "fileType": "",
+            "filePath": "",
+            "permission": True,
+        }
+        if folder_id:
+            body["folderId"] = folder_id
+        response = client.post(
+            "/api/userfolderMstr/FolderList",
+            body,
+            operation="list knowledge recordings",
+        )
+        for item in result_items(result_value(response)):
+            if not isinstance(item, dict):
+                continue
+            item_type = first_nonempty(first_value(item, "type", "Type")).lower()
+            if item_type == "folder":
+                child_id = first_value(item, "folderId", "FolderId")
+                try:
+                    parsed_id = int(child_id)
+                except (TypeError, ValueError):
+                    continue
+                if parsed_id and parsed_id not in visited:
+                    queue.append(parsed_id)
+                continue
+            if item_type != "file" or str(first_value(item, "fileAttribute", "FileAttribute")) != "3":
+                continue
+            title = first_value(
+                item,
+                "name",
+                "Name",
+                "kbfileTitle",
+                "KbfileTitle",
+                "fileName",
+                "FileName",
+            )
+            if args.keyword and args.keyword.lower() not in str(title or "").lower():
+                continue
+            recordings_found.append(
+                {
+                    "fileId": first_value(item, "fileId", "FileId"),
+                    "title": title,
+                    "fileName": first_value(item, "fileName", "FileName"),
+                    "folderId": first_value(item, "folderId", "FolderId"),
+                    "knowledgeBaseId": args.knowledge_base_id,
+                    "contentType": first_value(item, "contentType", "ContentType"),
+                    "uploadTime": first_value(item, "uploadTime", "UploadTime"),
+                    "updateTime": first_value(item, "updatetime", "Updatetime"),
+                }
+            )
+
+    return {
+        "ok": True,
+        "operation": "knowledge-recordings",
+        "knowledgeBaseId": args.knowledge_base_id,
+        "total": len(recordings_found),
+        "items": recordings_found,
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Query AideNote from Hermes")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -464,6 +553,13 @@ def build_parser() -> argparse.ArgumentParser:
     recordings_parser.add_argument("--page", type=int, default=1)
     recordings_parser.add_argument("--page-size", type=int, default=10)
     recordings_parser.add_argument("--keyword", default="")
+
+    shared_parser = subparsers.add_parser(
+        "shared-recordings", help="List recordings shared with the current account"
+    )
+    shared_parser.add_argument("--page", type=int, default=1)
+    shared_parser.add_argument("--page-size", type=int, default=10)
+    shared_parser.add_argument("--keyword", default="")
 
     detail_parser = subparsers.add_parser("recording-detail", help="Read one recording detail")
     detail_parser.add_argument("--file-id", required=True)
@@ -480,6 +576,11 @@ def build_parser() -> argparse.ArgumentParser:
     knowledge_parser.add_argument("--knowledge-base-id", type=int, required=True)
     knowledge_parser.add_argument("--folder-id", type=int)
     knowledge_parser.add_argument("--keyword", default="")
+    knowledge_recordings_parser = subparsers.add_parser(
+        "knowledge-recordings", help="Recursively list recordings in a knowledge base"
+    )
+    knowledge_recordings_parser.add_argument("--knowledge-base-id", type=int, required=True)
+    knowledge_recordings_parser.add_argument("--keyword", default="")
     return parser
 
 
@@ -487,10 +588,12 @@ HANDLERS = {
     "health": health,
     "user-info": user_info,
     "recordings": recordings,
+    "shared-recordings": shared_recordings,
     "recording-detail": recording_detail,
     "todos": todos,
     "knowledge-bases": knowledge_bases,
     "knowledge-files": knowledge_files,
+    "knowledge-recordings": knowledge_recordings,
 }
 
 

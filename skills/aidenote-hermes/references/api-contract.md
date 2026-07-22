@@ -7,10 +7,12 @@ The bundled `scripts/aidenote.py` is the only supported API entry point for this
 | `health` | token exchange, then recording list | Authentication and data access |
 | `user-info` | `/api/audiofileMstr/getUserInfo` | Current account information |
 | `recordings` | `/api/audiofileMstr/audiofileseleUserAllList` | Recording IDs, titles, dates, durations, processing state |
+| `shared-recordings` | `/api/audiofileMstr/audiofileseleUserAllList` with `screeningType=2` | Recordings shared with the current account |
 | `recording-detail` | `/api/audiofileMstr/audiofileToText` | Transcript, AI summary, and recording detail |
 | `todos` | recording list plus `/api/audiofileTodo/listByFile` | Extracted action items with source recording |
 | `knowledge-bases` | `/api/userfolderMstr/AllList` | Available knowledge bases |
 | `knowledge-files` | `/api/userfolderMstr/FolderList` | Files and folders in one knowledge base |
+| `knowledge-recordings` | recursive `/api/userfolderMstr/FolderList` | Audio recordings in a knowledge base and its nested folders |
 
 The preferred first-run flow uses the relay's short-lived `/agent-pair/start`, `/status`, `/approve`, and `/complete` endpoints. The AideNote App approves the 8-character code only after confirming that its signed-in account owns the dedicated API Key. The local worker stores that key in `aidenote-credentials.json` under the active Hermes profile with owner-only permissions, then destroys the relay pairing session. `scripts/configure.py` remains the manual recovery path.
 

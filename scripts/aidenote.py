@@ -326,6 +326,45 @@ def recording_detail(client: Client, args: argparse.Namespace) -> dict[str, Any]
     }
 
 
+def audio_url(client: Client, args: argparse.Namespace) -> dict[str, Any]:
+    response = client.post(
+        "/api/audiofileMstr/audioUrl",
+        {"audiofileFileid": args.file_id},
+        operation="get recording audio URL",
+    )
+    result = result_value(response)
+    if not isinstance(result, dict):
+        raise AideNoteError(
+            "invalid_response",
+            "AideNote did not return recording audio URL details",
+            operation="get recording audio URL",
+        )
+
+    url = first_nonempty(first_value(result, "audioUrl", "AudioUrl"))
+    parsed_url = parse.urlparse(url)
+    if parsed_url.scheme != "https" or not parsed_url.netloc or parsed_url.username or parsed_url.password:
+        raise AideNoteError(
+            "invalid_response",
+            "AideNote returned an invalid recording audio URL",
+            operation="get recording audio URL",
+        )
+
+    return {
+        "ok": True,
+        "operation": "audio-url",
+        "fileId": first_value(result, "audiofileFileid", "AudiofileFileid") or args.file_id,
+        "title": first_value(result, "audiofileTitle", "AudiofileTitle"),
+        "fileName": first_value(result, "audiofileFileName", "AudiofileFileName"),
+        "audioUrl": url,
+        "audioUrlExpiresAt": first_value(
+            result,
+            "audioUrlExpiresAt",
+            "AudioUrlExpiresAt",
+        ),
+        "expiresInSeconds": first_value(result, "expiresInSeconds", "ExpiresInSeconds"),
+    }
+
+
 def todos(client: Client, args: argparse.Namespace) -> dict[str, Any]:
     scan_count = clamp(args.recording_page_size, 1, 50)
     response = client.post(
@@ -564,6 +603,11 @@ def build_parser() -> argparse.ArgumentParser:
     detail_parser = subparsers.add_parser("recording-detail", help="Read one recording detail")
     detail_parser.add_argument("--file-id", required=True)
 
+    audio_url_parser = subparsers.add_parser(
+        "audio-url", help="Get a fresh temporary HTTPS URL for one accessible recording"
+    )
+    audio_url_parser.add_argument("--file-id", required=True)
+
     todos_parser = subparsers.add_parser("todos", help="List todos extracted from recordings")
     todos_parser.add_argument("--recording-page-size", type=int, default=20)
     todos_parser.add_argument("--page", type=int, default=1)
@@ -590,6 +634,7 @@ HANDLERS = {
     "recordings": recordings,
     "shared-recordings": shared_recordings,
     "recording-detail": recording_detail,
+    "audio-url": audio_url,
     "todos": todos,
     "knowledge-bases": knowledge_bases,
     "knowledge-files": knowledge_files,

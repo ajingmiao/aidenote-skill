@@ -9,6 +9,7 @@ The bundled `scripts/aidenote.py` is the only supported API entry point for this
 | `recordings` | `/api/audiofileMstr/audiofileseleUserAllList` | Recording IDs, titles, dates, durations, processing state |
 | `shared-recordings` | `/api/audiofileMstr/audiofileseleUserAllList` with `screeningType=2` | Recordings shared with the current account |
 | `recording-detail` | `/api/audiofileMstr/audiofileToText` | Transcript, AI summary, and recording detail |
+| `audio-url` | `/api/audiofileMstr/audioUrl` | Fresh 60-minute HTTPS URL for one account-authorized recording |
 | `todos` | recording list plus `/api/audiofileTodo/listByFile` | Extracted action items with source recording |
 | `knowledge-bases` | `/api/userfolderMstr/AllList` | Available knowledge bases |
 | `knowledge-files` | `/api/userfolderMstr/FolderList` | Files and folders in one knowledge base |
@@ -17,6 +18,8 @@ The bundled `scripts/aidenote.py` is the only supported API entry point for this
 The preferred first-run flow uses the relay's short-lived `/agent-pair/start`, `/status`, `/approve`, and `/complete` endpoints. The AideNote App approves the 8-character code only after confirming that its signed-in account owns the dedicated API Key. The local worker stores that key in `aidenote-credentials.json` under the active Hermes profile with owner-only permissions, then destroys the relay pairing session. `scripts/configure.py` remains the manual recovery path.
 
 All commands emit JSON. Successful output has `"ok": true`; failures have `"ok": false`, a stable `error` code, and a safe `message`. A nonzero process exit means the requested data was not retrieved and must not be interpreted as an empty result.
+
+`audio-url` requires `--file-id`. The backend returns the same not-found response when the recording does not exist or does not belong to the authenticated account, preventing file-ID enumeration. Successful output contains `fileId`, `title`, `fileName`, `audioUrl`, `audioUrlExpiresAt`, and `expiresInSeconds`. The command accepts only an HTTPS URL returned by AideNote and never constructs a URL from OSS object paths locally.
 
 ## Local connection suite
 

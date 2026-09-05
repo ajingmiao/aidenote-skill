@@ -1,12 +1,12 @@
 ---
 name: aidenote-hermes
-description: "Install and operate the verified AideNote local connection suite for Hermes, then query real AideNote recording notes, transcripts, summaries, extracted todos/action items, knowledge bases, account status, and mobile bridge health. Use whenever the user mentions AideNote, SlonAide, recording notes, meeting minutes, transcripts, summaries, today's tasks, todos, follow-ups, action items, knowledge bases, installing the AideNote connection, or connecting the AideNote mobile app to this computer."
+description: "Install and operate the verified AideNote local connection suite for Hermes, then query real AideNote recording notes, transcripts, summaries, temporary audio URLs, extracted todos/action items, knowledge bases, account status, and mobile bridge health. Use whenever the user mentions AideNote, SlonAide, recording notes, meeting minutes, transcripts, summaries, playing or downloading a recording, today's tasks, todos, follow-ups, action items, knowledge bases, installing the AideNote connection, or connecting the AideNote mobile app to this computer."
 license: MIT
 metadata:
   hermes:
-    version: 1.2.9
+    version: 1.3.0
     author: AideNote Team
-    tags: [AideNote, SlonAide, recordings, transcription, summaries, todos, meetings, knowledge-base, mobile-bridge]
+    tags: [AideNote, SlonAide, recordings, audio-url, transcription, summaries, todos, meetings, knowledge-base, mobile-bridge]
     category: productivity
 ---
 
@@ -54,6 +54,7 @@ Use `bridge.py status` to check progress. Its `pairing.status` changes from `pen
 | List/search recent recordings | `recordings` |
 | List recordings shared with me | `shared-recordings` |
 | Read transcript or AI summary | `recording-detail` |
+| Get a playable/downloadable recording URL | `audio-url` |
 | Ask about todos, tasks, action items, or follow-ups | `todos` |
 | List knowledge bases | `knowledge-bases` |
 | List files in a knowledge base | `knowledge-files` |
@@ -81,6 +82,16 @@ python3 ${HERMES_SKILL_DIR}/scripts/aidenote.py recording-detail --file-id "RECO
 ```
 
 Answer only from the returned detail. Distinguish transcript content from the AI summary and extracted action items.
+
+### Temporary audio URL
+
+When the user asks to play, download, process, or send one recording to another authorized tool, first resolve its recording ID and then run:
+
+```bash
+python3 ${HERMES_SKILL_DIR}/scripts/aidenote.py audio-url --file-id "RECORDING_ID"
+```
+
+The command asks AideNote for a fresh account-authorized HTTPS URL. Use `audioUrl` directly and tell the user when `audioUrlExpiresAt` is present. Never construct an OSS/CDN URL from a stored path, reuse an expired URL, or claim access when this command fails. Treat the returned URL as temporary private data: do not publish or send it to another person unless the user explicitly asks.
 
 ### Recordings shared with me
 
